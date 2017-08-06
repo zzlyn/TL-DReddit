@@ -1,16 +1,14 @@
 package src;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class Summerizer {
 
@@ -20,12 +18,19 @@ public class Summerizer {
 
 		Summerizer http = new Summerizer();
 
-		System.out.println("Testing 1 - Send Http GET request");
+		String jsonString = http.sendGet(
+				"https://www.reddit.com/r/DFO/comments/6rpb5i/an_accurate_summary_of_the_players_role_in_the/");
 
-		String jsonString = http.sendGet("https://www.reddit.com/r/DFO/comments/6rpb5i/an_accurate_summary_of_the_players_role_in_the/");
+		analyseResponseString(jsonString);
+
+	}
+
+	private static void analyseResponseString(String response) throws ParseException {
+
+		System.out.println("\nAnalyzing response .......");
 
 		// Analysis
-		JSONArray json = (JSONArray) new JSONParser().parse(jsonString);
+		JSONArray json = (JSONArray) new JSONParser().parse(response);
 
 		JSONObject dataJson = (JSONObject) new JSONParser().parse(json.get(1).toString());
 
@@ -33,31 +38,42 @@ public class Summerizer {
 				.parse(((JSONObject) dataJson.get("data")).get("children").toString());
 
 		for (int k = 0; k < childrenData.size(); k++) {
-			System.out.println("Post: " + ((JSONObject) ((JSONObject)childrenData.get(k)).get("data")).get("body"));
-			depackageReplies((JSONObject) ((JSONObject) childrenData.get(k)).get("replies"));
+			JSONObject firstLayerComment = (JSONObject) ((JSONObject) childrenData.get(k)).get("data");
+			System.out.println("Post: ");
+			depackageReplies(firstLayerComment);
 		}
 	}
-	
-	
-	//Iteratively collect all replies to this top post
-	//Draw a tree picture, might want to iterative from the top post instead of first reply layer
+
+	// Iteratively collect all replies to this top post
+	// Draw a tree picture, might want to iterative from the top post instead of
+	// first reply layer
 	private static void depackageReplies(JSONObject jsonObject) {
-		System.out.println(jsonObject.toString());
-		
-		int layers = 0;
-		
-		//iterative solution to print all replies
+		System.out.println(jsonObject.get("body"));
 		JSONObject replies = null;
-		while(jsonObject.get("replies") != ""){
-			System.out.println(++layers);
+		try {
+			replies = (JSONObject) jsonObject.get("replies");
+		} catch (ClassCastException e) {
+			System.out.println("no replies, bottom\n");
+			return;
 		}
-		
-		
+
+		// this comment has replies
+		JSONArray childrens = (JSONArray) (((JSONObject) replies.get("data")).get("children"));
+		// System.out.println(childrens.size());
+		for (int con = 0; con < childrens.size(); con++) {
+			JSONObject dataOut = (JSONObject) childrens.get(con);
+			JSONObject dataItself = (JSONObject) dataOut.get("data");
+			depackageReplies(dataItself);
+		}
+
 	}
 
 	// HTTP GET request
 	private String sendGet(String url) throws Exception {
-
+		
+		System.out.println("~~~~Testing 1 - Send Http GET request");
+		
+		
 		URL obj = new URL(url + ".json?");
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
@@ -68,8 +84,8 @@ public class Summerizer {
 		con.setRequestProperty("User-Agent", USER_AGENT);
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
-		System.out.println("Response Code : " + responseCode);
+		System.out.println("~~~~Sending 'GET' request to URL : " + url);
+		System.out.println("~~~~Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -81,7 +97,7 @@ public class Summerizer {
 		in.close();
 
 		// print result
-		System.out.println(response.toString());
+		// System.out.println(response.toString());
 
 		return response.toString();
 
