@@ -26,4 +26,5 @@ This readme.md is my dev log for now, update it to a description of the project 
 Using Aylien apis, I added in sentimental analysis and summarization after recursively collecting all comments on the post into a string ArrayList. 
 
 I have only done limited researches so I will probably replace aylien with something else in the future.
+
 Can I embed this into a browser?
