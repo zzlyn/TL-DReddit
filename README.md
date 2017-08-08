@@ -4,7 +4,7 @@ reads comments from a reddit post, use external api to analyze its contents
 
 
 
-2017-08-06
+### 2017-08-06
 
 
 
@@ -20,7 +20,7 @@ This readme.md is my dev log for now, update it to a description of the project 
 
 
 
-2017-08-08
+### 2017-08-08
 
 
 Using Aylien apis, I added in sentimental analysis and summarization after recursively collecting all comments on the post into a string ArrayList. 
