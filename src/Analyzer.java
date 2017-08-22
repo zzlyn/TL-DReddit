@@ -1,6 +1,5 @@
 package src;
 
-import java.net.URI;
 import java.util.ArrayList;
 
 import com.aylien.textapi.TextAPIClient;
@@ -9,12 +8,9 @@ import com.aylien.textapi.parameters.SummarizeParams;
 import com.aylien.textapi.responses.Sentiment;
 import com.aylien.textapi.responses.Summarize;
 
-public class mainRun {
+public class Analyzer {
 
-	public static void main(String[] args) throws Exception {
-
-		// specify post url
-		String postUrl = "https://www.reddit.com/r/DFO/comments/6rpb5i/an_accurate_summary_of_the_players_role_in_the/";
+	public static String urlListen(String postUrl) throws Exception {
 
 		// Initialize http get client
 		PostContents httpContents = new PostContents(postUrl);
@@ -31,6 +27,8 @@ public class mainRun {
 		String responseText = processText(jsonPost.getComments());
 
 		System.out.println(responseText);
+		
+		return responseText;
 	}
 
 	private static String processText(ArrayList<String> text) throws Exception {

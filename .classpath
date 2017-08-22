@@ -5,5 +5,6 @@
 	<classpathentry kind="lib" path="C:/Users/zzlyn/Downloads/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zzlyn/Downloads/client-0.6.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/zzlyn/Downloads/json-20160810.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zzlyn/Downloads/http-20070405.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
