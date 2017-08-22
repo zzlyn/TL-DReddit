@@ -1,4 +1,4 @@
-# tldrSum
+# postSumUp
 
 reads comments from a reddit post, use external api to analyze its contents
 
