@@ -28,3 +28,21 @@ Using Aylien apis, I added in sentimental analysis and summarization after recur
 I have only done limited researches so I will probably replace aylien with something else in the future.
 
 Can I embed this into a browser?
+
+
+
+### 2017-08-22
+
+
+This program now functions as a Java based RESTful service, expecting a http get request with URL parameter "postUrl" and value is encoded reddit domain url.
+
+Needs to improve performance on this backend, not aiming for monster response speed since its not really necessary. removing unwanted & unimportant codes should be enough.
+
+Server bugs out when:
+1. url is not on reddit domain - easy fix
+2. post comments has special symbols (?) need to test more on this
+
+Later features (if I don't get lazy):
+1. Better formatting on response, maybe respond a json instead.
+2. Weighing on each comment.
+3. More
