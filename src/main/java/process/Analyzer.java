@@ -1,40 +1,50 @@
-package local;
-
+package process;
 
 import java.util.ArrayList;
 
 import com.aylien.textapi.TextAPIClient;
+import com.aylien.textapi.TextAPIException;
 import com.aylien.textapi.parameters.SentimentParams;
 import com.aylien.textapi.parameters.SummarizeParams;
 import com.aylien.textapi.responses.Sentiment;
 import com.aylien.textapi.responses.Summarize;
 
-import web.PostContents;
-
 public class Analyzer {
 
-	public static String urlListen(String postUrl) throws Exception {
+	/**
+	 * Analyze the post result in JSON
+	 * 
+	 * @return analysis result
+	 */
+	public String analyze(String jsonString) {
 
-		// Initialize http get client
-		PostContents httpContents = new PostContents(postUrl);
-
-		// Send get request and get json string
-		String jsonString = httpContents.sendGet();
-
-		// Parse all post bodies in json format into array list object
-		JsonContent jsonPost = new JsonContent(jsonString);
-
-		// Process contents in the array list
-		// change this to another class
-		// processText(jsonPost.getComments());
-		String responseText = processText(jsonPost.getComments());
-
-		System.out.println(responseText);
+		// Parse JSON string to content object, collect all comments
+		JsonPostContent jsonContent = new JsonPostContent(jsonString);
+		jsonContent.parseComments();
 		
+		// Process contents in the array list
+		String responseText = null;
+		try {
+			responseText = processText(jsonContent.getComments());
+		} catch (TextAPIException e) {
+			e.printStackTrace();
+			System.out.println("Unexpected error while analyzing content: " + e.getMessage());
+			return null;
+		}
+
 		return responseText;
 	}
 
-	private static String processText(ArrayList<String> text) throws Exception {
+	/**
+	 * 
+	 * @param Concatenated
+	 *            comments
+	 * @return Sentimental analysis + summarization results
+	 * @throws TextAPIException
+	 */
+	private String processText(ArrayList<String> text) throws TextAPIException {
+
+		// Concatenate comments into a union String
 		String stringText = String.join(". ", text);
 
 		String resultResponse = "";

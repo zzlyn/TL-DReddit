@@ -1,4 +1,4 @@
-package local;
+package process;
 
 import java.util.ArrayList;
 
@@ -8,38 +8,31 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * Collection of all the comments/replies in the post
+ * Parse comments recursively, later change to iteratively
  * 
  * @author yannan.lin
  *
  */
-public class JsonContent {
+public class JsonPostContent {
 
-	private ArrayList<String> comments;
+	private ArrayList<String> comments = new ArrayList<>();
 
-	public JsonContent(String jsonString) {
-		comments = new ArrayList<>();
+	private String jsonString;
 
-		try {
-			analyseResponseString(jsonString);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public JsonPostContent(String jContent) {
+		jsonString = jContent;
 	}
 
 	/**
-	 * for every child of the top layer json array (layer 1 comments), retrieve
+	 * for every child of the top layer JSON array (layer 1 comments), retrieve
 	 * all of its comments
 	 * 
 	 * @param response
 	 * @throws ParseException
 	 */
-	private void analyseResponseString(String response) throws ParseException {
+	private void parseTopComment() throws ParseException {
 
-		System.out.println("\nAnalyzing response .......");
-
-		// Analysis
-		JSONArray json = (JSONArray) new JSONParser().parse(response);
+		JSONArray json = (JSONArray) new JSONParser().parse(jsonString);
 
 		JSONObject dataJson = (JSONObject) new JSONParser().parse(json.get(1).toString());
 
@@ -49,16 +42,16 @@ public class JsonContent {
 		for (int k = 0; k < childrenData.size(); k++) {
 			JSONObject firstLayerComment = (JSONObject) ((JSONObject) childrenData.get(k)).get("data");
 			System.out.println("Post: ");
-			depackageReplies(firstLayerComment);
+			parseReplies(firstLayerComment);
 		}
 	}
 
 	/**
-	 * Recursively retrieve all comments embedded/childed in this comment
+	 * Recursively retrieve all comments embedded/children in this comment
 	 * 
 	 * @param jsonObject
 	 */
-	private void depackageReplies(JSONObject jsonObject) {
+	private void parseReplies(JSONObject jsonObject) {
 		System.out.println(jsonObject.get("body"));
 		comments.add((String) jsonObject.get("body"));
 		JSONObject replies = null;
@@ -76,11 +69,29 @@ public class JsonContent {
 		for (int con = 0; con < childrens.size(); con++) {
 			JSONObject dataOut = (JSONObject) childrens.get(con);
 			JSONObject dataItself = (JSONObject) dataOut.get("data");
-			depackageReplies(dataItself);
+			parseReplies(dataItself);
 		}
 
 	}
 
+	/**
+	 * Parse the JSON string in this instance into array of comments
+	 * 
+	 * @return Collection of all comments
+	 */
+	public void parseComments() {
+		try {
+			parseTopComment();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * return array of comments
+	 * 
+	 * @return
+	 */
 	public ArrayList<String> getComments() {
 		return comments;
 	}
