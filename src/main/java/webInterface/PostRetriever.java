@@ -7,12 +7,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Get reddit post in JSON string format
- * 
- * @author yannan.lin
- *
+ * Get Reddit post in JSON string format
  */
-public class JsonPostRetriever {
+public class PostRetriever {
 
 	// User agent for HTTP Client
 	private String USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36";
@@ -21,10 +18,9 @@ public class JsonPostRetriever {
 	 * Send HTTP get request to reddit post URL, expect to get JSON formatted
 	 * string in return
 	 * 
-	 * @return Json formatted string for entire post
-	 * @throws IOException
+	 * @return JSON formatted string for entire post
 	 */
-	public String getJsonString(String baseUrl) throws IOException {
+	public String getJsonPost(String baseUrl) throws IOException {
 		
 		String jsonUrl = baseUrl + ".json?";
 		

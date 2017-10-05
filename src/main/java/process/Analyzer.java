@@ -1,51 +1,61 @@
 package process;
 
 import java.util.ArrayList;
-
+import org.json.simple.parser.ParseException;
 import com.aylien.textapi.TextAPIClient;
 import com.aylien.textapi.TextAPIException;
-import com.aylien.textapi.parameters.SentimentParams;
-import com.aylien.textapi.parameters.SummarizeParams;
-import com.aylien.textapi.responses.Sentiment;
-import com.aylien.textapi.responses.Summarize;
+import com.aylien.textapi.parameters.*;
+import com.aylien.textapi.responses.*;
 
+/**
+ * Analyzes JSON content by traversing the comment tree and using analysis APIs
+ */
 public class Analyzer {
 
+	// Responses when errors are encountered
+	private String parseErrorMessage = "Error parsing post content in JSON.";
+	private String analysisErrorMessage = "Error sending analysis request.";
+
 	/**
-	 * Analyze the post result in JSON
+	 * Accepts post content in JSON and returns final analysis in text
 	 * 
 	 * @return analysis result
 	 */
 	public String analyze(String jsonString) {
 
 		// Parse JSON string to content object, collect all comments
-		JsonPostContent jsonContent = new JsonPostContent(jsonString);
-		jsonContent.parseComments();
-		
+		JsonPostProcessor jsonProcessor = new JsonPostProcessor(jsonString);
+		try {
+			jsonProcessor.parsePost();
+		} catch (ParseException e) {
+			e.printStackTrace();
+			System.out.println("Error parsing JSON String: " + jsonString);
+			return parseErrorMessage;
+		}
+
 		// Process contents in the array list
 		String responseText = null;
 		try {
-			responseText = processText(jsonContent.getComments());
+			responseText = processText(jsonProcessor.getComments());
 		} catch (TextAPIException e) {
 			e.printStackTrace();
 			System.out.println("Unexpected error while analyzing content: " + e.getMessage());
-			return null;
+			return analysisErrorMessage;
 		}
 
 		return responseText;
 	}
 
 	/**
+	 * Process & analyze the text array collected from JSON post
 	 * 
-	 * @param Concatenated
-	 *            comments
+	 * @param Replies
 	 * @return Sentimental analysis + summarization results
-	 * @throws TextAPIException
 	 */
-	private String processText(ArrayList<String> text) throws TextAPIException {
+	private String processText(ArrayList<String> comments) throws TextAPIException {
 
 		// Concatenate comments into a union String
-		String stringText = String.join(". ", text);
+		String stringText = String.join(". ", comments);
 
 		String resultResponse = "";
 
