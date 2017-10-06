@@ -58,41 +58,42 @@ public class Analyzer {
 		// Concatenate comments into a union String
 		String stringText = String.join(". ", comments);
 
-		String resultResponse = "";
+		StringBuilder responseBuilder = new StringBuilder();
+		// String resultResponse = "";
 
 		TextAPIClient client = new TextAPIClient("4601a828", "9a6eeba16455f86d493446218c494fab");
 
 		// Key Word extraction
-		resultResponse += "Key Words:" + htmlSkip;
+		responseBuilder.append("Key Words:" + htmlSkip + "[");
 		EntitiesParams.Builder epBuilder = EntitiesParams.newBuilder();
 		epBuilder.setText(stringText);
 		Entities entities = client.entities(epBuilder.build());
 		for (Entity entity : entities.getEntities()) {
 			for (String sf : entity.getSurfaceForms()) {
-				resultResponse += sf + ", ";
+				responseBuilder.append(sf + ", ");
 			}
 		}
-		resultResponse += htmlSkip;
+		responseBuilder.append("]" + htmlSkip);
 
 		// Sentimental Analysis
-		resultResponse += "Sentiments:" + htmlSkip;
+		responseBuilder.append("Sentiments:" + htmlSkip);
 		SentimentParams.Builder builder = SentimentParams.newBuilder();
 		builder.setText(stringText);
 		Sentiment sentiment = client.sentiment(builder.build());
-		resultResponse += sentiment.toString();
-		resultResponse += htmlSkip;
+		responseBuilder.append(sentiment.toString());
+		responseBuilder.append(htmlSkip);
 
 		// Summarization
-		resultResponse += "Summarization:" + htmlSkip;
+		responseBuilder.append("Summarization:" + htmlSkip);
 		SummarizeParams.Builder sumBuilder = SummarizeParams.newBuilder();
 		sumBuilder.setText(stringText);
 		sumBuilder.setTitle(" ");
 		Summarize summerize = client.summarize(sumBuilder.build());
 		for (String sentence : summerize.getSentences()) {
-			resultResponse += "- " + sentence + htmlSkip;
+			responseBuilder.append("- " + sentence + htmlSkip);
 		}
 
-		return resultResponse;
+		return responseBuilder.toString();
 	}
 
 }
