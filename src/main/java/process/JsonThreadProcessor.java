@@ -30,15 +30,15 @@ public class JsonThreadProcessor {
 		// Process original post
 		JSONArray json = (JSONArray) new JSONParser().parse(jsonString);
 
-		JSONObject dataJson = (JSONObject) new JSONParser().parse(json.get(1).toString());
+		JSONObject dataJsonObj = (JSONObject) new JSONParser().parse(json.get(1).toString());
 
 		JSONArray childrenData = (JSONArray) new JSONParser()
-				.parse(((JSONObject) dataJson.get("data")).get("children").toString());
+				.parse(((JSONObject) dataJsonObj.get("data")).get("children").toString());
 
 		// Process comments & replies
 		for (int k = 0; k < childrenData.size(); k++) {
-			JSONObject firstLayerComment = (JSONObject) ((JSONObject) childrenData.get(k)).get("data");
-			parseReplies(firstLayerComment);
+			JSONObject topLayerComment = (JSONObject) ((JSONObject) childrenData.get(k)).get("data");
+			parseReplies(topLayerComment);
 		}
 	}
 
@@ -61,12 +61,16 @@ public class JsonThreadProcessor {
 		}
 
 		// this comment has replies
-		JSONArray childrens = (JSONArray) (((JSONObject) replies.get("data")).get("children"));
+		JSONArray children = (JSONArray) (((JSONObject) replies.get("data")).get("children"));
 
-		for (int con = 0; con < childrens.size(); con++) {
-			JSONObject dataOut = (JSONObject) childrens.get(con);
-			JSONObject dataItself = (JSONObject) dataOut.get("data");
-			parseReplies(dataItself);
+		/*
+		 * for (int count = 0; count < children.size(); count++) { JSONObject
+		 * dataOut = (JSONObject) children.get(count); JSONObject dataItself =
+		 * (JSONObject) dataOut.get("data"); parseReplies(dataItself); }
+		 */
+		for (JSONObject child : (JSONObject[]) children.toArray()) {
+			JSONObject childReplies = (JSONObject) child.get("data");
+			parseReplies(childReplies);
 		}
 
 	}
