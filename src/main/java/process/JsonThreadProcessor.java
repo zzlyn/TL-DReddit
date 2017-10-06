@@ -28,9 +28,9 @@ public class JsonThreadProcessor {
 	public void parsePost() throws ParseException {
 
 		// Process original post
-		JSONArray json = (JSONArray) new JSONParser().parse(jsonString);
+		JSONArray jPost = (JSONArray) new JSONParser().parse(jsonString);
 
-		JSONObject dataJsonObj = (JSONObject) new JSONParser().parse(json.get(1).toString());
+		JSONObject dataJsonObj = (JSONObject) new JSONParser().parse(jPost.get(1).toString());
 
 		JSONArray childrenData = (JSONArray) new JSONParser()
 				.parse(((JSONObject) dataJsonObj.get("data")).get("children").toString());
@@ -45,17 +45,17 @@ public class JsonThreadProcessor {
 	/**
 	 * Recursively retrieve all comments embedded/children in this comment
 	 */
-	private void parseReplies(JSONObject jsonObject) {
+	private void parseReplies(JSONObject comment) {
 
-		if (jsonObject.get("body") == null) {
+		if (comment.get("body") == null) {
 			return;
 		}
 
-		comments.add((String) jsonObject.get("body"));
+		comments.add((String) comment.get("body"));
 		JSONObject replies = null;
 
 		try {
-			replies = (JSONObject) jsonObject.get("replies");
+			replies = (JSONObject) comment.get("replies");
 		} catch (ClassCastException e) {
 			return;
 		}
