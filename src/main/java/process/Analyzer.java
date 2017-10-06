@@ -1,6 +1,11 @@
 package process;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
+
 import org.json.simple.parser.ParseException;
 import com.aylien.textapi.TextAPIClient;
 import com.aylien.textapi.TextAPIException;
@@ -17,6 +22,18 @@ public class Analyzer {
 	private String analysisErrorMessage = "Error sending analysis request.";
 	private String htmlSkip = "<br><br>";
 
+	// NLP client
+	private TextAPIClient client = null;
+
+	/**
+	 * Initialize API client with properties file
+	 */
+	public Analyzer() throws FileNotFoundException, IOException {
+		Properties clientProps = new Properties();
+		clientProps.load(new FileInputStream("clientAPI.properties"));
+		client = new TextAPIClient(clientProps.getProperty("applicationId"), clientProps.getProperty("applicationKey"));
+	}
+
 	/**
 	 * Accepts post content in JSON and returns final analysis in text
 	 * 
@@ -25,9 +42,9 @@ public class Analyzer {
 	public String analyze(String jsonString) {
 
 		// Parse JSON string to content object, collect all comments
-		JsonPostProcessor jsonProcessor = new JsonPostProcessor(jsonString);
+		JsonThreadProcessor jThreadProcessor = new JsonThreadProcessor(jsonString);
 		try {
-			jsonProcessor.parsePost();
+			jThreadProcessor.parsePost();
 		} catch (ParseException e) {
 			e.printStackTrace();
 			System.out.println("Error parsing JSON String: " + jsonString);
@@ -37,7 +54,7 @@ public class Analyzer {
 		// Process contents in the array list
 		String responseText = null;
 		try {
-			responseText = processText(jsonProcessor.getComments());
+			responseText = constructResponse(jThreadProcessor.getComments());
 		} catch (TextAPIException e) {
 			e.printStackTrace();
 			System.out.println("Unexpected error while analyzing content: " + e.getMessage());
@@ -53,47 +70,56 @@ public class Analyzer {
 	 * @param Replies
 	 * @return Sentimental analysis + summarization results
 	 */
-	private String processText(ArrayList<String> comments) throws TextAPIException {
+	private String constructResponse(ArrayList<String> comments) throws TextAPIException {
 
 		// Concatenate comments into a union String
-		String stringText = String.join(". ", comments);
+		String commentText = String.join(". ", comments);
 
 		StringBuilder responseBuilder = new StringBuilder();
-		// String resultResponse = "";
-
-		TextAPIClient client = new TextAPIClient("4601a828", "9a6eeba16455f86d493446218c494fab");
 
 		// Key Word extraction
-		responseBuilder.append("Key Words:" + htmlSkip + "[");
+		buildKeyEntities(responseBuilder, commentText);
+
+		// Sentimental Analysis
+		buildSentiments(responseBuilder, commentText);
+
+		// Summarization
+		buildSummary(responseBuilder, commentText);
+
+		return responseBuilder.toString();
+	}
+
+	private void buildKeyEntities(StringBuilder builder, String targetText) throws TextAPIException {
+		builder.append("Key Words:" + htmlSkip + "[");
 		EntitiesParams.Builder epBuilder = EntitiesParams.newBuilder();
-		epBuilder.setText(stringText);
+		epBuilder.setText(targetText);
 		Entities entities = client.entities(epBuilder.build());
 		for (Entity entity : entities.getEntities()) {
 			for (String sf : entity.getSurfaceForms()) {
-				responseBuilder.append(sf + ", ");
+				builder.append(sf + ", ");
 			}
 		}
-		responseBuilder.append("]" + htmlSkip);
+		builder.append("]" + htmlSkip);
+	}
 
-		// Sentimental Analysis
-		responseBuilder.append("Sentiments:" + htmlSkip);
-		SentimentParams.Builder builder = SentimentParams.newBuilder();
-		builder.setText(stringText);
-		Sentiment sentiment = client.sentiment(builder.build());
-		responseBuilder.append(sentiment.toString());
-		responseBuilder.append(htmlSkip);
+	private void buildSentiments(StringBuilder builder, String targetText) throws TextAPIException {
+		builder.append("Sentiments:" + htmlSkip);
+		SentimentParams.Builder spBuilder = SentimentParams.newBuilder();
+		spBuilder.setText(targetText);
+		Sentiment sentiment = client.sentiment(spBuilder.build());
+		builder.append(sentiment.toString());
+		builder.append(htmlSkip);
+	}
 
-		// Summarization
-		responseBuilder.append("Summarization:" + htmlSkip);
+	private void buildSummary(StringBuilder builder, String targetText) throws TextAPIException {
+		builder.append("Summarization:" + htmlSkip);
 		SummarizeParams.Builder sumBuilder = SummarizeParams.newBuilder();
-		sumBuilder.setText(stringText);
+		sumBuilder.setText(targetText);
 		sumBuilder.setTitle(" ");
 		Summarize summerize = client.summarize(sumBuilder.build());
 		for (String sentence : summerize.getSentences()) {
-			responseBuilder.append("- " + sentence + htmlSkip);
+			builder.append("- " + sentence + htmlSkip);
 		}
-
-		return responseBuilder.toString();
 	}
 
 }

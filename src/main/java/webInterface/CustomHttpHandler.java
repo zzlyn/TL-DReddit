@@ -1,5 +1,6 @@
 package webInterface;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import com.sun.net.httpserver.HttpExchange;
@@ -13,8 +14,13 @@ import process.Analyzer;
  */
 public class CustomHttpHandler implements HttpHandler {
 
-	private PostRetriever jPostRetriever = new PostRetriever();
-	private Analyzer postAnalyzer = new Analyzer();
+	private RedditThreadRetriever jThreadRetriever = null;
+	private Analyzer threadAnalyzer = null;
+
+	public void init() throws FileNotFoundException, IOException {
+		threadAnalyzer = new Analyzer();
+		jThreadRetriever = new RedditThreadRetriever();
+	}
 
 	/**
 	 * Handle every HTTP request from Chrome client side
@@ -25,11 +31,11 @@ public class CustomHttpHandler implements HttpHandler {
 		String query = httpExchange.getRequestURI().getQuery();
 		String postUrl = getQueryComponent(query, "postUrl");
 
-		// Retrieve requested post in JSON string format
-		String postJsonString = jPostRetriever.getJsonPost(postUrl);
+		// Retrieve requested thread in JSON string format
+		String threadJsonStr = jThreadRetriever.getThreadJson(postUrl);
 
 		// Analyze requested content and build a response
-		String response = postAnalyzer.analyze(postJsonString);
+		String response = threadAnalyzer.analyze(threadJsonStr);
 
 		httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
@@ -45,7 +51,7 @@ public class CustomHttpHandler implements HttpHandler {
 		httpExchange.sendResponseHeaders(200, response.length());
 		OutputStream os = httpExchange.getResponseBody();
 		os.write(response.getBytes());
-		System.out.println("<--data written to client-->\n" + response);
+		System.out.println("<--data written to client-->\n" + response + "\n<--------->");
 		os.close();
 	}
 

@@ -14,11 +14,14 @@ public class MainServerRun {
 
 		// Establish a local HTTP server
 		HttpServer server = null;
+		CustomHttpHandler customHandler = new CustomHttpHandler();
+		
 		try {
 			server = HttpServer.create(new InetSocketAddress(8000), 0);
+			customHandler.init();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Error establishing local HTTP server.");
+			System.out.println("Error establishing local HTTP server & handler.");
 			return;
 		}
 
