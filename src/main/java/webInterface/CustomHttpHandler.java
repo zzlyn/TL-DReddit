@@ -45,6 +45,7 @@ public class CustomHttpHandler implements HttpHandler {
 		httpExchange.sendResponseHeaders(200, response.length());
 		OutputStream os = httpExchange.getResponseBody();
 		os.write(response.getBytes());
+		System.out.println("<--data written to client-->\n" + response);
 		os.close();
 	}
 

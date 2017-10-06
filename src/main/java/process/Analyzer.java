@@ -15,6 +15,7 @@ public class Analyzer {
 	// Responses when errors are encountered
 	private String parseErrorMessage = "Error parsing post content in JSON.";
 	private String analysisErrorMessage = "Error sending analysis request.";
+	private String htmlSkip = "<br><br>";
 
 	/**
 	 * Accepts post content in JSON and returns final analysis in text
@@ -59,24 +60,38 @@ public class Analyzer {
 
 		String resultResponse = "";
 
-		// Sentimental Analysis
 		TextAPIClient client = new TextAPIClient("4601a828", "9a6eeba16455f86d493446218c494fab");
+
+		// Key Word extraction
+		resultResponse += "Key Words:" + htmlSkip;
+		EntitiesParams.Builder epBuilder = EntitiesParams.newBuilder();
+		epBuilder.setText(stringText);
+		Entities entities = client.entities(epBuilder.build());
+		for (Entity entity : entities.getEntities()) {
+			for (String sf : entity.getSurfaceForms()) {
+				resultResponse += sf + ", ";
+			}
+		}
+		resultResponse += htmlSkip;
+
+		// Sentimental Analysis
+		resultResponse += "Sentiments:" + htmlSkip;
 		SentimentParams.Builder builder = SentimentParams.newBuilder();
 		builder.setText(stringText);
 		Sentiment sentiment = client.sentiment(builder.build());
-		System.out.println(sentiment);
 		resultResponse += sentiment.toString();
+		resultResponse += htmlSkip;
 
 		// Summarization
+		resultResponse += "Summarization:" + htmlSkip;
 		SummarizeParams.Builder sumBuilder = SummarizeParams.newBuilder();
 		sumBuilder.setText(stringText);
 		sumBuilder.setTitle(" ");
 		Summarize summerize = client.summarize(sumBuilder.build());
-
 		for (String sentence : summerize.getSentences()) {
-			System.out.println(sentence);
-			resultResponse += "\n" + sentence;
+			resultResponse += "- " + sentence + htmlSkip;
 		}
+
 		return resultResponse;
 	}
 

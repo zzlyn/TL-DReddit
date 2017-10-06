@@ -38,7 +38,7 @@ public class JsonPostProcessor {
 		// Process comments & replies
 		for (int k = 0; k < childrenData.size(); k++) {
 			JSONObject firstLayerComment = (JSONObject) ((JSONObject) childrenData.get(k)).get("data");
-			System.out.println("Post: ");
+			// System.out.println("Post: ");
 			parseReplies(firstLayerComment);
 		}
 	}
@@ -47,20 +47,26 @@ public class JsonPostProcessor {
 	 * Recursively retrieve all comments embedded/children in this comment
 	 */
 	private void parseReplies(JSONObject jsonObject) {
-		System.out.println(jsonObject.get("body"));
+
+		// System.out.println(jsonObject.get("body"));
+
+		if (jsonObject.get("body") == null) {
+			return;
+		}
+
 		comments.add((String) jsonObject.get("body"));
 		JSONObject replies = null;
 
 		try {
 			replies = (JSONObject) jsonObject.get("replies");
 		} catch (ClassCastException e) {
-			// this comment has no replies
-			System.out.println("no replies, bottom\n");
+			// System.out.println("no replies, bottom\n");
 			return;
 		}
 
 		// this comment has replies
 		JSONArray childrens = (JSONArray) (((JSONObject) replies.get("data")).get("children"));
+
 		// System.out.println(childrens.size());
 		for (int con = 0; con < childrens.size(); con++) {
 			JSONObject dataOut = (JSONObject) childrens.get(con);
