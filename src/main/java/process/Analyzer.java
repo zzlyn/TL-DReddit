@@ -12,8 +12,12 @@ import com.aylien.textapi.TextAPIException;
 import com.aylien.textapi.parameters.*;
 import com.aylien.textapi.responses.*;
 
+import DAO.RedditThread;
+
 /**
  * Analyzes JSON content by traversing the comment tree and using analysis APIs
+ * 
+ * Constructs & returns final analysis result
  */
 public class Analyzer {
 
@@ -21,6 +25,9 @@ public class Analyzer {
 	private String parseErrorMessage = "Error parsing post content in JSON.";
 	private String analysisErrorMessage = "Error sending analysis request.";
 	private String htmlSkip = "<br><br>";
+
+	// Thread parser
+	private JsonThreadParser jThreadParser;
 
 	// NLP client
 	private TextAPIClient client = null;
@@ -32,6 +39,8 @@ public class Analyzer {
 		Properties clientProps = new Properties();
 		clientProps.load(new FileInputStream("clientAPI.properties"));
 		client = new TextAPIClient(clientProps.getProperty("applicationId"), clientProps.getProperty("applicationKey"));
+
+		jThreadParser = new JsonThreadParser();
 	}
 
 	/**
@@ -42,9 +51,10 @@ public class Analyzer {
 	public String analyze(String jsonString) {
 
 		// Parse JSON string to content object, collect all comments
-		JsonThreadProcessor jThreadProcessor = new JsonThreadProcessor(jsonString);
+		RedditThread redThread = new RedditThread();
+
 		try {
-			jThreadProcessor.parsePost();
+			redThread = jThreadParser.parseThread(jsonString);
 		} catch (ParseException e) {
 			e.printStackTrace();
 			System.out.println("Error parsing JSON String: " + jsonString);
@@ -54,7 +64,7 @@ public class Analyzer {
 		// Process contents in the array list
 		String responseText = null;
 		try {
-			responseText = constructResponse(jThreadProcessor.getComments());
+			responseText = constructResponse(redThread);
 		} catch (TextAPIException e) {
 			e.printStackTrace();
 			System.out.println("Unexpected error while analyzing content: " + e.getMessage());
@@ -70,12 +80,17 @@ public class Analyzer {
 	 * @param Replies
 	 * @return Sentimental analysis + summarization results
 	 */
-	private String constructResponse(ArrayList<String> comments) throws TextAPIException {
+	private String constructResponse(RedditThread redThread) throws TextAPIException {
+
+		ArrayList<String> comments = redThread.getComments();
 
 		// Concatenate comments into a union String
 		String commentText = String.join(". ", comments);
 
 		StringBuilder responseBuilder = new StringBuilder();
+
+		// Add title
+		responseBuilder.append(redThread.getTitle() + htmlSkip);
 
 		// Key Word extraction
 		buildKeyEntities(responseBuilder, commentText);

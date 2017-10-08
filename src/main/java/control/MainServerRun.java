@@ -25,7 +25,7 @@ public class MainServerRun {
 			return;
 		}
 
-		server.createContext("/analyze", new CustomHttpHandler());
+		server.createContext("/analyze", customHandler);
 		server.start();
 
 	}

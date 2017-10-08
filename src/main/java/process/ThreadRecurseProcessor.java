@@ -9,13 +9,13 @@ import org.json.simple.parser.ParseException;
 /**
  * Parse comments recursively, later change to iteratively
  */
-public class JsonThreadProcessor {
+public class ThreadRecurseProcessor {
 
 	private ArrayList<String> comments = new ArrayList<>();
 
 	private String jsonString;
 
-	public JsonThreadProcessor(String jContent) {
+	public ThreadRecurseProcessor(String jContent) {
 		jsonString = jContent;
 	}
 
@@ -63,14 +63,10 @@ public class JsonThreadProcessor {
 		// this comment has replies
 		JSONArray children = (JSONArray) (((JSONObject) replies.get("data")).get("children"));
 
-		/*
-		 * for (int count = 0; count < children.size(); count++) { JSONObject
-		 * dataOut = (JSONObject) children.get(count); JSONObject dataItself =
-		 * (JSONObject) dataOut.get("data"); parseReplies(dataItself); }
-		 */
-		for (JSONObject child : (JSONObject[]) children.toArray()) {
-			JSONObject childReplies = (JSONObject) child.get("data");
-			parseReplies(childReplies);
+		for (int count = 0; count < children.size(); count++) {
+			JSONObject dataOut = (JSONObject) children.get(count);
+			JSONObject dataItself = (JSONObject) dataOut.get("data");
+			parseReplies(dataItself);
 		}
 
 	}
