@@ -57,11 +57,10 @@ public class JsonThreadParser {
 
 			// "Replies" field can be a JSON object or a String depending on if
 			// there are any replies to this comment
-			try {
-				replies = (JSONObject) headData.get("replies");
-			} catch (ClassCastException e) {
+			if (headData.get("replies") instanceof String)
 				continue;
-			}
+
+			replies = (JSONObject) headData.get("replies");
 
 			if (replies != null) {
 
