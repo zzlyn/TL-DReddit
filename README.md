@@ -46,3 +46,17 @@ Later features (if I don't get lazy):
 1. Better formatting on response, maybe respond a json instead.
 2. Weighing on each comment.
 3. More
+
+
+
+## 2017-10-09 generic to-do-list
+
+
+#Chrome Ext. Side
+- Use call back to change temporary text to analysis response -> done, Synchrnous xmlhttprequest in Js blocks operations in functions and freezez Js engine. Had to change xmlhttprequest to async.
+- Format JSON data coming from backend with different font sizes for better visability *
+
+#Back-end Java
+- Refactor
+- Move recursive parser class to test package -> done, no longer needed
+- Send JSON instead of pure text *
