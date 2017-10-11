@@ -39,14 +39,6 @@ public class CustomHttpHandler implements HttpHandler {
 
 		httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-		// remove this? test it out
-		if (httpExchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-			httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
-			httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
-			httpExchange.sendResponseHeaders(204, -1);
-			return;
-		}
-
 		// Send response back to client
 		httpExchange.sendResponseHeaders(200, response.length());
 		OutputStream os = httpExchange.getResponseBody();

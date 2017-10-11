@@ -12,6 +12,7 @@ import com.aylien.textapi.TextAPIException;
 import com.aylien.textapi.parameters.*;
 import com.aylien.textapi.responses.*;
 
+import DAO.AnalyticResponse;
 import DAO.RedditThread;
 
 /**
@@ -24,7 +25,6 @@ public class Analyzer {
 	// Responses when errors are encountered
 	private String parseErrorMessage = "Error parsing post content in JSON.";
 	private String analysisErrorMessage = "Error sending analysis request.";
-	private String htmlSkip = "<br><br>";
 
 	// Thread parser
 	private JsonThreadParser jThreadParser;
@@ -84,28 +84,28 @@ public class Analyzer {
 
 		ArrayList<String> comments = redThread.getComments();
 
-		// Concatenate comments into a union String
+		// Concatenate comments into a union String of sentences
 		String commentText = String.join(". ", comments);
 
-		StringBuilder responseBuilder = new StringBuilder();
-
-		// Add title
-		responseBuilder.append(redThread.getTitle() + htmlSkip);
-
 		// Key Word extraction
-		buildKeyEntities(responseBuilder, commentText);
+		String keywords = buildKeyEntities(commentText);
 
 		// Sentimental Analysis
-		buildSentiments(responseBuilder, commentText);
+		String sentiments = buildSentiments(commentText);
 
 		// Summarization
-		buildSummary(responseBuilder, commentText);
+		String summary = buildSummary(commentText);
 
-		return responseBuilder.toString();
+		AnalyticResponse response = new AnalyticResponse(redThread.getTitle(), keywords, sentiments, summary);
+
+		return response.constructResponse();
 	}
 
-	private void buildKeyEntities(StringBuilder builder, String targetText) throws TextAPIException {
-		builder.append("Key Words:" + htmlSkip + "[");
+	// Analyze keywords
+	private String buildKeyEntities(String targetText) throws TextAPIException {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("[");
 		EntitiesParams.Builder epBuilder = EntitiesParams.newBuilder();
 		epBuilder.setText(targetText);
 		Entities entities = client.entities(epBuilder.build());
@@ -114,27 +114,34 @@ public class Analyzer {
 				builder.append(sf + ", ");
 			}
 		}
-		builder.append("]" + htmlSkip);
+		builder.append("]");
+		return builder.toString();
 	}
+	
+	// Analyze sentiments
+	private String buildSentiments(String targetText) throws TextAPIException {
 
-	private void buildSentiments(StringBuilder builder, String targetText) throws TextAPIException {
-		builder.append("Sentiments:" + htmlSkip);
 		SentimentParams.Builder spBuilder = SentimentParams.newBuilder();
 		spBuilder.setText(targetText);
 		Sentiment sentiment = client.sentiment(spBuilder.build());
-		builder.append(sentiment.toString());
-		builder.append(htmlSkip);
+		return sentiment.toString();
+
 	}
 
-	private void buildSummary(StringBuilder builder, String targetText) throws TextAPIException {
-		builder.append("Summarization:" + htmlSkip);
+	// Analyze summary
+	private String buildSummary(String targetText) throws TextAPIException {
+		StringBuilder builder = new StringBuilder();
+
 		SummarizeParams.Builder sumBuilder = SummarizeParams.newBuilder();
 		sumBuilder.setText(targetText);
 		sumBuilder.setTitle(" ");
 		Summarize summerize = client.summarize(sumBuilder.build());
 		for (String sentence : summerize.getSentences()) {
-			builder.append("- " + sentence + htmlSkip);
+			builder.append("- " + sentence + "<br><br>");
 		}
+
+		return builder.toString();
+
 	}
 
 }
