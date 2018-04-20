@@ -60,3 +60,8 @@ Later features (if I don't get lazy):
 - Refactor
 - Move recursive parser class to test package -> done, no longer needed
 - Send JSON instead of pure text *
+
+## 2018-04-20
+
+- potential refactor to use this API: https://dandelion.eu/
+- cleaner service endpoint, but requires writing own client
